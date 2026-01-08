@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from lead_engine import lead_engine
+from compliance_guardrail import sanitize
 
 app = FastAPI(title="Funding Qualification Engine")
 
@@ -22,3 +23,8 @@ class Lead(BaseModel):
 def qualify_lead(lead: Lead):
     result = lead_engine.invoke(lead.dict())
     return result
+
+
+@app.post("/message")
+def review_message(payload: dict):
+    return sanitize(payload["message"])

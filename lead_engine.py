@@ -28,18 +28,18 @@ class LeadState(TypedDict):
 
 def icp_gate(state: LeadState):
     if state["country"] not in ["US", "Canada"]:
-        return {"qualified": False, "rejection_reason": "Non US/Canada"}
+        return {**state, "qualified": False, "rejection_reason": "Non US/Canada"}
 
     if state["role"].lower() not in ["owner","founder","co-founder","managing partner","ceo","president"]:
-        return {"qualified": False, "rejection_reason": "Not decision maker"}
+        return {**state, "qualified": False, "rejection_reason": "Not decision maker"}
 
     if not state["has_business_bank"]:
-        return {"qualified": False, "rejection_reason": "No business bank"}
+        return {**state, "qualified": False, "rejection_reason": "No business bank"}
 
     if state["business_type"] != "for-profit":
-        return {"qualified": False, "rejection_reason": "Non-profit"}
+        return {**state, "qualified": False, "rejection_reason": "Non-profit"}
 
-    return {"qualified": True}
+    return {**state, "qualified": True}
 
 # =========================
 # FINANCIAL QUALIFICATION
@@ -48,11 +48,12 @@ def icp_gate(state: LeadState):
 def financial_gate(state: LeadState):
     if state["country"] == "US":
         if state["credit_score"] < 575 or state["monthly_revenue"] < 30000 or state["time_in_business"] < 12:
-            return {"qualified": False, "rejection_reason": "Failed US Financial Thresholds"}
+            return {**state, "qualified": False, "rejection_reason": "Failed US Financial Thresholds"}
     else:
         if state["credit_score"] < 500 or state["monthly_revenue"] < 10000 or state["time_in_business"] < 6:
-            return {"qualified": False, "rejection_reason": "Failed Canada Financial Thresholds"}
-    return {"qualified": True}
+            return {**state, "qualified": False, "rejection_reason": "Failed Canada Financial Thresholds"}
+
+    return {**state, "qualified": True}
 
 # =========================
 # INTENT SCORING
@@ -69,7 +70,7 @@ def intent_scoring(state: LeadState):
     if state["funding_amount"] >= 50000:
         score += 10
 
-    return {"intent_score": score, "qualified": score >= 70}
+    return {**state, "intent_score": score, "qualified": score >= 70}
 
 # =========================
 # LIVE TRANSFER READINESS
@@ -77,8 +78,8 @@ def intent_scoring(state: LeadState):
 
 def live_transfer_gate(state: LeadState):
     if not state["qualified"]:
-        return {"qualified": False, "rejection_reason": "Intent score too low"}
-    return {"qualified": True}
+        return {**state, "qualified": False, "rejection_reason": "Intent score too low"}
+    return {**state, "qualified": True}
 
 # =========================
 # GRAPH
